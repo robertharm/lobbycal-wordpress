@@ -2,7 +2,7 @@
 /*
  * Plugin Name: lobbycal2press for wordpress
  * Plugin URI: http://lobbycal.transparency.eu
- * Description: Plugin to display meetings from lobbycal.greens-efa-service.eu. Based on http://datatables.net/dev/knockout/
+ * Description: Plugin to display meetings from lobbycal.transparency.eu. Based on http://datatables.net/dev/knockout/
  * Version: 1.1
  * Author: GREENS EFA EU
  * Author URI: http://lobbycal.transparency.eu
@@ -60,7 +60,8 @@ function lobbycal2press_scripts() {
 	        var lc2pShowTags  = '<?php echo $options['lobbycal2press_checkbox_field_tags']; ?>';
 
 	        var lc2pShowTagsTitle  = '<?php echo $options['lobbycal2press_checkbox_field_tagsTitle']; ?>';
-			var lc2pOrder = '<?php echo $options['lobbycal2press_radio_field_order']; ?>';
+	        
+	        var lc2pOrder = '<?php echo $options['lobbycal2press_radio_field_order']; ?>';
 	        lc2pOrder = (lc2pOrder === undefined) ? 'date asc' : lc2pOrder;
 	        lc2pOrder = (lc2pOrder === '') ? 'date asc' : lc2pOrder;
 	        var lc2pPerPage  = '<?php echo $options['lobbycal2press_text_field_perPage']; ?>';
