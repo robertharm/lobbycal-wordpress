@@ -1,11 +1,11 @@
 <?php
 /*
  * Plugin Name: lobbycal2press for wordpress
- * Plugin URI: http://lobbycal.transparency.eu
- * Description: Plugin to display meetings from lobbycal.transparency.eu. Based on http://datatables.net/dev/knockout/
- * Version: 1.0
+ * Plugin URI: http://lobbycal.greens-efa-service.eu
+ * Description: Plugin to display meetings from lobbycal.greens-efa-service.eu. Based on http://datatables.net/dev/knockout/
+ * Version: 1.1
  * Author: GREENS EFA EU
- * Author URI: http://lobbycal.transparency.eu
+ * Author URI: http://lobbycal.greens-efa-service.eu
  * License: GPL
  */
 function lobbycal2press_scripts() {
@@ -60,10 +60,6 @@ function lobbycal2press_scripts() {
 	        var lc2pShowTags  = '<?php echo $options['lobbycal2press_checkbox_field_tags']; ?>';
 
 	        var lc2pShowTagsTitle  = '<?php echo $options['lobbycal2press_checkbox_field_tagsTitle']; ?>';
-	        
-	        var lc2pOrder = '<?php echo $options['lobbycal2press_radio_field_order']; ?>';
-	        lc2pOrder = (lc2pOrder === undefined) ? 'date asc' : lc2pOrder;
-	        lc2pOrder = (lc2pOrder === '') ? 'date asc' : lc2pOrder;
 	        var lc2pPerPage  = '<?php echo $options['lobbycal2press_text_field_perPage']; ?>';
 	        lc2pPerPage = (lc2pPerPage === undefined) ? 10 : lc2pPerPage;
 	        lc2pPerPage = (lc2pPerPage === '') ? 10 : lc2pPerPage;
@@ -103,10 +99,148 @@ function lobbycal2press_settings_init() {
 	
 	add_settings_field ( 'lobbycal2press_checkbox_field_lastname', __ ( 'Display column for MEP last name?', 'lobbycal2press' ), 'lobbycal2press_checkbox_field_lastname_render', 'pluginPage', 'lobbycal2press_pluginPage_section' );
 	
-	add_settings_field ( 'lobbycal2press_radio_field_order', __ ( 'What is the default order when loaded for the first time?', 'lobbycal2press' ), 'lobbycal2press_radio_field_order_render', 'pluginPage', 'lobbycal2press_pluginPage_section' );
-	
 	add_settings_field ( 'lobbycal2press_textarea_field_example', __ ( 'Use this code to place the calendar in a post or page', 'lobbycal2press' ), 'lobbycal2press_textarea_field_example_render', 'pluginPage', 'lobbycal2press_pluginPage_section' );
+	
+	/*ical*/
+	add_settings_section ( 'lobbycal2press_pluginPage_section_ical', __ ( 'iCal Settings for lobbycal2press plugin', 'lobbycal2press' ), 'lobbycal2press_settings_section_ical_callback', 'pluginPage' );
+
+	add_settings_field ( 'lobbycal2press_ical_calendar_name', __ ( 'calendar name', 'lobbycal2press' ), 'lobbycal2press_ical_calendar_name_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
+	add_settings_field ( 'lobbycal2press_ical_calendar_description', __ ( 'calendar description', 'lobbycal2press' ), 'lobbycal2press_ical_calendar_description_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
+	add_settings_field ( 'lobbycal2press_ical_title_prefix', __ ( 'title prefix for all meetings', 'lobbycal2press' ), 'lobbycal2press_ical_title_prefix_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
+	add_settings_field ( 'lobbycal2press_ical_static_content', __ ( 'static content to be added at the end of each meeting description', 'lobbycal2press' ), 'lobbycal2press_ical_static_content_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
+	add_settings_field ( 'lobbycal2press_ical_static_url', __ ( 'static url for all meetings', 'lobbycal2press' ), 'lobbycal2press_ical_static_url_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
+	add_settings_field ( 'lobbycal2press_ical_filename', __ ( 'filename of iCal file', 'lobbycal2press' ), 'lobbycal2press_ical_filename_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
+	add_settings_field ( 'lobbycal2press_ical_fixed_location', __ ( 'geolocation 1: use fixed location for all meetings (eg EU Parliament)', 'lobbycal2press' ), 'lobbycal2press_ical_fixed_location_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
+	add_settings_field ( 'lobbycal2press_ical_fixed_location_lat', __ ( 'geolocation 2a: use fixed latitude value for all meetings (eg 50.838908)', 'lobbycal2press' ), 'lobbycal2press_ical_fixed_location_latitude_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
+	add_settings_field ( 'lobbycal2press_ical_fixed_location_lon', __ ( 'geolocation 2b: use fixed longitude value for all meetings (eg 4.373942)', 'lobbycal2press' ), 'lobbycal2press_ical_fixed_location_longitude_render', 'pluginPage', 'lobbycal2press_pluginPage_section_ical' );
 }
+
+function lobbycal2press_ical_calendar_name_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_calendar_name'] == NULL) {
+		$ical_calendar_name = 'LobbyCalendar for ';
+	} else {
+		$ical_calendar_name = $options['lobbycal2press_ical_calendar_name'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_calendar_name]'
+	size="60"
+	value='<?php echo $ical_calendar_name;  ?>'>
+<?php }
+
+function lobbycal2press_ical_calendar_description_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_calendar_description'] == NULL) {
+		$ical_calendar_description = 'This calendar shows information about meetings held with lobbyists and interest representatives such as civil society organisations.';
+	} else {
+		$ical_calendar_description = $options['lobbycal2press_ical_calendar_description'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_calendar_description]'
+	size="60"
+	value='<?php echo $ical_calendar_description;  ?>'>
+<?php }
+
+function lobbycal2press_ical_filename_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_filename'] == NULL) {
+		$ical_filename = 'lobbycal2press.ics';
+	} else {
+		$ical_filename = $options['lobbycal2press_ical_filename'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_filename]'
+	size="60"
+	value='<?php echo $ical_filename;  ?>'>
+<?php }
+
+function lobbycal2press_ical_title_prefix_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_title_prefix'] == NULL) {
+		$ical_title_prefix = 'GreensEP LobbyCal:';
+	} else {
+		$ical_title_prefix = $options['lobbycal2press_ical_title_prefix'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_title_prefix]'
+	size="60"
+	value='<?php echo $ical_title_prefix;  ?>'>
+<?php }
+
+function lobbycal2press_ical_static_content_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_static_content'] == NULL) {
+		$ical_static_content = '';
+	} else {
+		$ical_static_content = $options['lobbycal2press_ical_static_content'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_static_content]'
+	size="60"
+	value='<?php echo $ical_static_content;  ?>'>
+<?php }
+
+function lobbycal2press_ical_static_url_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_static_url'] == NULL) {
+		$ical_static_url = '';
+	} else {
+		$ical_static_url = $options['lobbycal2press_ical_static_url'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_static_url]'
+	size="60"
+	value='<?php echo $ical_static_url;  ?>'>
+<?php }
+
+function lobbycal2press_ical_fixed_location_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_fixed_location'] == NULL) {
+		$fixed_location = '';
+	} else {
+		$fixed_location = $options['lobbycal2press_ical_fixed_location'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_fixed_location]'
+	size="60"
+	value='<?php echo $fixed_location;  ?>'>
+<?php }
+
+function lobbycal2press_ical_fixed_location_latitude_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_fixed_location_latitude'] == NULL) {
+		$fixed_location_latitude = '';
+	} else {
+		$fixed_location_latitude = $options['lobbycal2press_ical_fixed_location_latitude'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_fixed_location_latitude]'
+	size="60"
+	value='<?php echo $fixed_location_latitude;  ?>'>
+<?php }
+
+function lobbycal2press_ical_fixed_location_longitude_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	if ($options['lobbycal2press_ical_fixed_location_longitude'] == NULL) {
+		$fixed_location_longitude = '';
+	} else {
+		$fixed_location_longitude = $options['lobbycal2press_ical_fixed_location_longitude'];
+	}	
+	?>
+	<input type='text'
+	name='lobbycal2press_settings[lobbycal2press_ical_fixed_location_longitude]'
+	size="60"
+	value='<?php echo $fixed_location_longitude;  ?>'>
+<?php }
+
 function lobbycal2press_text_field_apiURL_render() {
 	$options = get_option ( 'lobbycal2press_settings' );
 	?>
@@ -120,7 +254,8 @@ function lobbycal2press_textarea_field_example_render() {
 	$options = get_option ( 'lobbycal2press_settings' );
 	?><textarea id="textarea_example"
 	name="lobbycal2press_settings[lobbycal2press_textarea_field_example]"
-	rows="14" cols="50">&lt;table id=&quot;lobbycal&quot; aria-describedby=&quot;lobbycal_info&quot;&gt;
+	rows="14" cols="50">&lt;p&gt;&lta href="<?php echo plugin_dir_url(__FILE__) . 'ical.php' ;?>" target="_blank"&gt;Subscribe to LobbyCal via iCal&lt;/a&gt; (copy link and use it within Thunderbird, Outlook, Google Calendar etc. to automatically receive infos about new meetings in your calendar - &lt;a href="https://www.webtermine.at/abo/abo-ical/" target="_blank"&gt;tutorials in German&lt;/a&gt;)&lt;/p&gt;
+&lt;table id=&quot;lobbycal&quot; aria-describedby=&quot;lobbycal_info&quot;&gt;
 	&lt;thead&gt;
 		&lt;tr&gt;
 			&lt;th&gt;Date&lt;/th&gt;
@@ -130,7 +265,7 @@ function lobbycal2press_textarea_field_example_render() {
 			&lt;th&gt;Partners&lt;/th&gt;
 			&lt;th&gt;Title&lt;/th&gt;
 			&lt;th&gt;Tags&lt;/th&gt;
-		&lt;/tr&gt; 
+		&lt;/tr&gt;
 	&lt;/thead&gt;
 &lt;/table&gt; 	
 </textarea>
@@ -234,78 +369,11 @@ function lobbycal2press_checkbox_field_tagsTitle_render() {
 	value='1'>
 <?php
 }
-function lobbycal2press_radio_field_order_render() {
-	$options = get_option ( 'lobbycal2press_settings' );
-	?>
-<input type='radio'
-	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
-	<?php checked( $options['lobbycal2press_radio_field_order'], 'startDate asc'); ?>
-	value='startDate asc'>
-Start date ascending
-</input>
-<br />
-<input type='radio'
-	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
-	<?php checked( $options['lobbycal2press_radio_field_order'],  'startDate desc'); ?>
-	value='startDate desc'>
-Start date descending
-</input>
-<br />
-<input type='radio'
-	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
-	<?php checked( $options['lobbycal2press_radio_field_order'], 'endDate asc'); ?>
-	value='endDate asc'>
-End date ascending
-</input>
-<br />
-<input type='radio'
-	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
-	<?php checked( $options['lobbycal2press_radio_field_order'],  'endDate desc'); ?>
-	value='endDate desc'>
-End date descending
-</input>
-<br />
-
-
-
-<input type='radio'
-	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
-	<?php checked( $options['lobbycal2press_radio_field_order'], 'userLastName asc'); ?>
-	value='userLastName asc'>
-Last name ascending
-</input>
-<br />
-<input type='radio'
-	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
-	<?php checked( $options['lobbycal2press_radio_field_order'],  'userLastName desc'); ?>
-	value='userLastName desc'>
-Last name descending
-</input>
-<br />
-
-
-
-
-<input type='radio'
-	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
-	<?php checked( $options['lobbycal2press_radio_field_order'], 'partners asc'); ?>
-	value='partners asc'>
-Partner ascending
-</input>
-<br />
-<input type='radio'
-	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
-	<?php checked( $options['lobbycal2press_radio_field_order'],  'partners desc'); ?>
-	value='partners desc'>
-Partner descending
-</input>
-<br />
-
-
-<?php
-}
 function lobbycal2press_settings_section_callback() {
 	echo __ ( 'The URL and at least one field are mandatory for the plugin to work. <br/> Make sure to use the https protocol here if your websites are accessed via https themselves.<br/> The default sorting of meetings is latest first.', 'lobbycal2press' );
+}
+function lobbycal2press_settings_section_ical_callback() {
+	echo __ ( 'Each calendar also automatically generates an iCal feed which can be used to automatically integrate the meetings into calendar programs like Outlook or Google Calendar for example. Some supported iCal metadata information is not available (yet?) from the API - anyway those info can be set globally below for all events. For tutorials on how to integrate an iCal feed with popular calendar clients, please have a look at <a href="https://www.webtermine.at/abo/abo-ical/" target="_blank">https://www.webtermine.at/abo/abo-ical/</a> (German)', 'lobbycal2press' );
 }
 function lobbycal2press_options_page() {
 	?>
