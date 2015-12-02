@@ -1,11 +1,11 @@
 <?php
 /*
  * Plugin Name: lobbycal2press for wordpress
- * Plugin URI: http://lobbycal.greens-efa-service.eu
+ * Plugin URI: http://lobbycal.transparency.eu
  * Description: Plugin to display meetings from lobbycal.greens-efa-service.eu. Based on http://datatables.net/dev/knockout/
  * Version: 1.1
  * Author: GREENS EFA EU
- * Author URI: http://lobbycal.greens-efa-service.eu
+ * Author URI: http://lobbycal.transparency.eu
  * License: GPL
  */
 function lobbycal2press_scripts() {
@@ -60,6 +60,9 @@ function lobbycal2press_scripts() {
 	        var lc2pShowTags  = '<?php echo $options['lobbycal2press_checkbox_field_tags']; ?>';
 
 	        var lc2pShowTagsTitle  = '<?php echo $options['lobbycal2press_checkbox_field_tagsTitle']; ?>';
+			var lc2pOrder = '<?php echo $options['lobbycal2press_radio_field_order']; ?>';
+	        lc2pOrder = (lc2pOrder === undefined) ? 'date asc' : lc2pOrder;
+	        lc2pOrder = (lc2pOrder === '') ? 'date asc' : lc2pOrder;
 	        var lc2pPerPage  = '<?php echo $options['lobbycal2press_text_field_perPage']; ?>';
 	        lc2pPerPage = (lc2pPerPage === undefined) ? 10 : lc2pPerPage;
 	        lc2pPerPage = (lc2pPerPage === '') ? 10 : lc2pPerPage;
@@ -98,6 +101,8 @@ function lobbycal2press_settings_init() {
 	add_settings_field ( 'lobbycal2press_checkbox_field_firstname', __ ( 'Display column for MEP first name?', 'lobbycal2press' ), 'lobbycal2press_checkbox_field_firstname_render', 'pluginPage', 'lobbycal2press_pluginPage_section' );
 	
 	add_settings_field ( 'lobbycal2press_checkbox_field_lastname', __ ( 'Display column for MEP last name?', 'lobbycal2press' ), 'lobbycal2press_checkbox_field_lastname_render', 'pluginPage', 'lobbycal2press_pluginPage_section' );
+
+	add_settings_field ( 'lobbycal2press_radio_field_order', __ ( 'What is the default order when loaded for the first time?', 'lobbycal2press' ), 'lobbycal2press_radio_field_order_render', 'pluginPage', 'lobbycal2press_pluginPage_section' );
 	
 	add_settings_field ( 'lobbycal2press_textarea_field_example', __ ( 'Use this code to place the calendar in a post or page', 'lobbycal2press' ), 'lobbycal2press_textarea_field_example_render', 'pluginPage', 'lobbycal2press_pluginPage_section' );
 	
@@ -369,11 +374,78 @@ function lobbycal2press_checkbox_field_tagsTitle_render() {
 	value='1'>
 <?php
 }
+function lobbycal2press_radio_field_order_render() {
+	$options = get_option ( 'lobbycal2press_settings' );
+	?>
+<input type='radio'
+	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
+	<?php checked( $options['lobbycal2press_radio_field_order'], 'startDate asc'); ?>
+	value='startDate asc'>
+Start date ascending
+</input>
+<br />
+<input type='radio'
+	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
+	<?php checked( $options['lobbycal2press_radio_field_order'],  'startDate desc'); ?>
+	value='startDate desc'>
+Start date descending
+</input>
+<br />
+<input type='radio'
+	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
+	<?php checked( $options['lobbycal2press_radio_field_order'], 'endDate asc'); ?>
+	value='endDate asc'>
+End date ascending
+</input>
+<br />
+<input type='radio'
+	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
+	<?php checked( $options['lobbycal2press_radio_field_order'],  'endDate desc'); ?>
+	value='endDate desc'>
+End date descending
+</input>
+<br />
+
+
+
+<input type='radio'
+	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
+	<?php checked( $options['lobbycal2press_radio_field_order'], 'userLastName asc'); ?>
+	value='userLastName asc'>
+Last name ascending
+</input>
+<br />
+<input type='radio'
+	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
+	<?php checked( $options['lobbycal2press_radio_field_order'],  'userLastName desc'); ?>
+	value='userLastName desc'>
+Last name descending
+</input>
+<br />
+
+
+
+
+<input type='radio'
+	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
+	<?php checked( $options['lobbycal2press_radio_field_order'], 'partners asc'); ?>
+	value='partners asc'>
+Partner ascending
+</input>
+<br />
+<input type='radio'
+	name='lobbycal2press_settings[lobbycal2press_radio_field_order]'
+	<?php checked( $options['lobbycal2press_radio_field_order'],  'partners desc'); ?>
+	value='partners desc'>
+Partner descending
+</input>
+<br />
+
+
+<?php
+}
 function lobbycal2press_settings_section_callback() {
 	echo __ ( 'The URL and at least one field are mandatory for the plugin to work. <br/> Make sure to use the https protocol here if your websites are accessed via https themselves.<br/> The default sorting of meetings is latest first.', 'lobbycal2press' );
-}
-function lobbycal2press_settings_section_ical_callback() {
-	echo __ ( 'Each calendar also automatically generates an iCal feed which can be used to automatically integrate the meetings into calendar programs like Outlook or Google Calendar for example. Some supported iCal metadata information is not available (yet?) from the API - anyway those info can be set globally below for all events. For tutorials on how to integrate an iCal feed with popular calendar clients, please have a look at <a href="https://www.webtermine.at/abo/abo-ical/" target="_blank">https://www.webtermine.at/abo/abo-ical/</a> (German)', 'lobbycal2press' );
 }
 function lobbycal2press_options_page() {
 	?>
